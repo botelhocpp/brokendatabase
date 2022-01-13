@@ -13,20 +13,20 @@
 
 ### About
 
-This project was proposed by Rocky, as a step in the selection process for an internship in Web Analytics. The project was entirely done in Javascript, with some tools from Node.js, including running on the Node environment.
+This project was proposed by Rocky, as a step in the selection process for an internship in Web Analytics. The project was entirely done in Javascript, with some tools from Node.js, including running on the Node environment. To read the full report go to the doc/ folder.
 
 ### Description
 
 The project focuses on one problem: recovering a NoSQL database, applying corrections to element properties, and exporting the corrected database at the end. There are three correction steps:
 
-- Price Type Non-numeric
-- Names with weird characters
-- Products without the quantity property
+- Price Type Non-numeric.
+- Names with weird characters.
+- Products without the quantity property.
 
 The program also performs the validation of the corrected data, ensuring that everything is in compliance. Validation is divided into two steps:
 
-- Product names categorized and sorted by ID
-- Total value of stocks, by category
+- Product names categorized and sorted by ID.
+- Total value of stocks, by category.
 
 The project also throws a file error, represented by a FileError object, if something is wrong with the system input. That is, if the system input file has its structure compromised, or if the program is unable to access it for some reason.
 
@@ -48,12 +48,12 @@ If you run it from outside the folder it will throw a file error.
 
 ### Resources
 
-- [x] Repair of product price types
-- [x] Retrieval of product names
-- [x] Product quantities repair
-- [x] Validation of product names
-- [x] Validation of product prices
-- [x] Minimal structure and interface
+- [x] Repair of product price types.
+- [x] Retrieval of product names.
+- [x] Product quantities repair.
+- [x] Validation of product names.
+- [x] Validation of product prices.
+- [x] Minimal structure and interface.
 
 ### Technologies
 

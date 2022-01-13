@@ -267,5 +267,5 @@ try {
      stockValue(databaseRaw, productCategories);
 }
 catch (fileError) {
-     console.log(fileError.name + ": " + fileError.message);
+     console.log("\033[1;37m%s\033[0m: \033[0;31m%s\033[0m", fileError.name, fileError.message);
 }

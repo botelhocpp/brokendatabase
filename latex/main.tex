@@ -1,0 +1,290 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{color}
+\usepackage[skins]{tcolorbox}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+\newtcolorbox{myframe}[2][]{%
+  enhanced,colback=white,colframe=black,coltitle=black,
+  sharp corners,boxrule=0.4pt,
+  fonttitle=\itshape,
+  attach boxed title to top left={yshift=-0.3\baselineskip-0.4pt,xshift=2mm},
+  boxed title style={tile,size=minimal,left=0.5mm,right=0.5mm,
+    colback=white,before upper=\strut},
+  title=#2,#1
+}
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+\parindent=0mm
+\parskip=3.5mm
+\author{Pedro M. Botelho}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+\large
+
+%----------------------------------------
+% CAPA
+%----------------------------------------
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=12cm]{rocky.png}
+\end{figure}
+\vspace{1.5cm}
+\huge{Projeto Classificatório} \par \vspace{1.0cm}
+\Large{Processo seletivo - \textit{Web Analytics}}\\ \vspace{3cm}
+\large
+\textnormal{PEDRO HENRIQUE \textbf{MAGALHÃES BOTELHO}}\\ \vspace{2cm}
+GRADUANDO EM ENGENHARIA DE COMPUTAÇÃO\\ \vspace{3cm}
+%ORIENTADOR:
+QUIXADÁ - CE\\
+2022 \par
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+\large
+
+\section{Introdução}
+
+Olá! Me chamo Pedro M. Botelho e este é o relatório simplificado do projeto "Broken Database". O código está no arquivo "resolucao.js", e os arquivos de banco de dados estão na pasta "database", onde "saida.json" é a resposta para o problema do banco de dados corrompido.
+
+O código está documentado, em língua inglesa, e explica, em si, a integridade e funcionamento do código. Nesse relatório falarei sobre questões de implementação. 
+
+\section{A organização do código}
+
+O código está dividido em 6 seções, de forma a organizar da melhor forma possível o código. Cada seção traz um elemento fundamental para o código, e a separação busca seccionar o código quanto à sua utilidade. A primeira seção é apenas uma explicação da usabilidade do código. As outras seções serão discutidas em breve.
+
+O código se utiliza bastante de \textit{arrow functions}, já que trazem uma simplicidade visual e não contém um contexto "this". A simplicidade teve  de ser, algumas vezes, desprezada para introduzir robustez ao código, como laços for...in e tratamento de erros.
+
+A entrada e saída do sistema é feita através dos arquivos na pasta \textbf{database/}, que são manipulados utilizando constantes no código, que podem ser modificadas para referenciar outros arquivos. O código, em sim, foi feito para ser responsivo o suficiente para aplicar as modificações e validações requisitadas a qualquer arquivo JSON solicitado, desde que incluído seu caminho nas respectivas constantes. 
+
+Dito isso, veremos agora as principais do código, de forma que vejamos os principais pontos de implementação do código. A maior parte do código utilizou-se do \textbf{paradigma funcional}, para facilitar a manutenção do programa e a manipulação de dados.
+
+\section{Variáveis Constantes}
+
+Alguns valores são utilizados no decorrer de todo o código. Para assegurar o reúso de software, a robustez e a legibilidade esses valores foram colocados no começo, como forma de cabeçalho, como constantes, para a segurança do programa, já que não devem ser modificados.
+
+Cada constante tem um propósito específico:
+
+\begin{itemize}
+    \item \textbf{namesCorrection}: Guarda um array de pares de string, onde cada par representa um caractere a ser substituído e o novo caractere. É usado para corrigir os valores da propriedade "name" dos objetos do arquivo JSON. Poderia ter sido definida dentro da única função que a usa, fixNames(), mas foi definida em uma seção dedicada para melhorar a organização do código. 
+    \item \textbf{brokenDatabase}: Guarda o caminho do arquivo JSON a ser recuperado. Se trata do indicador do arquivo de \textbf{entrada} do sistema.
+    \item \textbf{okDatabase}: Guarda o caminho de onde o arquivo JSON ficará após ser recuperado. Se trata do indicador do arquivo de \textbf{saída} do sistema.
+    \item \textbf{fs}: Uma constante especial que importa o módulo de \textit{sistema de arquivos}, do \textbf{Node.js}. Isso nos permite ter acesso ao sistema de arquivos da máquina.
+    \item \textbf{FileError}: Um objeto utilizado para indicar um erro de arquivo. Quando o caminho indicado na constante \textbf{brokenDatabase} não existir, ou não puder ser acessado ou ter uma estrutura inválida é lançado um erro, representado por esse objeto. O objeto tem duas propriedades:
+    \begin{itemize}
+        \item \textbf{name}: O nome do erro representado pelo objeto.
+        \item \textbf{message}: Uma mensagem que deve ser emitida ao usuário quando o erro for lançado.
+    \end{itemize}
+\end{itemize}
+
+Os arquivos de banco de dados, como dito antes, estão na pasta database/, para melhorar a organização do projeto. A localização do arquivo desejado pode ser modificado na respectiva constante.
+
+\section{Funções}
+
+O sistema conta com várias funções com diferentes propósitos, mas com um mesmo fim: agregar à reparação do banco de dados. Todas as funções foram definidas como \textbf{arrow functions} constantes.
+
+Algumas funções poderiam ter sido feitas em um única linha, mas foi prezado pela legibilidade do código e pela robustez(como o tratamento de erros da função \textbf{importDatabase()}).
+
+\subsection{Funções do Banco de Dados NoSQL}
+
+Essas funções realizam o contato direto com os arquivos que representam o banco de dados, ou seja, os arquivos JSON. A constante \textbf{fs} é utilizada aqui para invocar os métodos próprios para manipular arquivos de maneira síncrona.
+
+A função \textbf{importDatabase()}, como mostrada na listagem 1, retorna uma lista de objetos obtidos do caminho do banco de dados, especificado pelo argumento, por meio da função readFileSync(). Um \textbf{bloco try-catch} irá lançar um erro \textbf{FileError} caso haja algum problema com o caminho especificado ou com o arquivo em si, permitindo ao usuário localizar e consertar o erro. 
+
+\begin{lstlisting}[caption=Função importDatabase()]
+const importDatabase = (databaseFile) => {
+     try {
+          return JSON.parse(fs.readFileSync(databaseFile, 'utf-8'));
+     }
+     catch (fileError) {
+          throw FileError;
+     }
+}
+\end{lstlisting}
+
+Já a função \textbf{exportDatabase()}, como mostrada na listagem 2, realiza a operação contrária: exporta a lista de objetos para um banco de dados JSON, utilizando a função writeFileSync(). A função stringify() irá converter a lista de objetos em uma string JSON facilmente legível, para ser exportada.
+
+\begin{lstlisting}[caption=Função exportDatabase()]
+const exportDatabase = (databaseFile, databaseRaw) => {
+     fs.writeFileSync(databaseFile, JSON.stringify(databaseRaw, null, 2));
+}
+\end{lstlisting}
+
+\subsection{Funções de Reparo}
+
+Essas funções tem como foco principal reparar o banco de dados, baseando-se nas especificações definidas. São funções interoperáveis, não dependendo umas das outras para funcionar. As funções recebem a lista de objetos a ser manipulada e a retorna, ao final, já consertada. A estrutura \textbf{for...in} foi utilizada para iterar na lista de objetos.
+
+A função \textbf{fixNames()}, como mostrada na listagem 3, substitui caracteres inválidos pelos respectivos caracteres válidos. Os pares que definem a substituição estão na constante namesCorrection. A função itera nos pares da constante e substitui todas as ocorrências dos caracteres inválidos na propriedade "name" do objeto, utilizando a função replaceAll() e passando os dois elementos do par. 
+
+\begin{lstlisting}[caption=Função fixNames()]
+const fixNames = (database) => {
+     for (let i in database) {
+          namesCorrection.forEach(correct => database[i]["name"] = database[i]["name"].replaceAll(correct[0], correct[1]));
+     }
+     return database;
+}
+\end{lstlisting}
+
+A função \textbf{fixPrices()}, mostrada na listagem 4, repara o tipo dos valores da propriedade "price", de string para número. Para isso é verificado, na linha 3, se o tipo do valor da propriedade "price", do objeto da iteração, não é um valor numérico. Se não for então é realizado um \textit{cast} do valor, utilizando a função Number(), e o atribuindo de volta ao objeto.
+
+\begin{lstlisting}[caption=Função fixPrices()]
+const fixPrices = (database) => {
+     for (let i in database) {
+          if (typeof database[i]["price"] != Number) {
+               database[i]["price"] = Number(database[i]["price"]);
+          }
+     }
+     return database;
+}
+\end{lstlisting}
+
+Já a função \textbf{fixQuantities()}, como mostra a listagem 5, adiciona uma propriedade "quantity" ao objeto, caso ele não a tenha, a atribuindo valor zero. Para realizar essa verificação é utilizado a função hasOwnProperty("quantity"), na linha 3, pra verificar se o objeto em questão tem a propriedade "quantity". Caso não a tenha é atribuído a propriedade ao objeto, e a ela, valor zero. 
+
+\begin{lstlisting}[caption=Função fixQuantities()]
+const fixQuantities = (database) => {
+     for (let i in database) {
+          if (!database[i].hasOwnProperty("quantity")) {
+               database[i]["quantity"] = 0;
+          }
+     }
+     return database;
+}
+\end{lstlisting}
+
+\subsection{Funções de Validação}
+
+Essas funções tem como objetivo verificar se o banco foi devidamente recuperado. Sua principal ação é mostrar ao usuário, no console, informações do banco de dados, como o nome dos produtos após a reparação e o valor total do estoque.
+
+Essas funções tem algumas características diferenciais que valem a pena serem mencionadas:
+
+\begin{itemize}
+    \item \textbf{Sequências de Escape ANSI}: Utilizadas para estilizar os títulos de cada etapa da validação, para que fique fácil sua identificação. A cor verde utilizada é definida pela sequência 0;32m. 
+    \item \textbf{Parâmetro \textit{categories}}: Lista de categorias dos produtos, sem repetições, e previamente obtida do arquivo JSON. É falado mais sobre esse argumento na seção 5.
+    \item \textbf{Intenso uso do Paradigma Funcional}: O uso do paradigma funcional foi incrementado nessas funções, justamente para maximizar a legibilidade e a densidade de código. As funções forEach(), filter(), map(), reduce() e sort() dão ao programa muito mais robustez!  
+\end{itemize}
+
+A função \textbf{listProducts()}, como é mostrado na listagem 6, tem como objetivo listar o nome dos produtos, agrupados por categoria e ordenados por ID. Para isso a função itera sobre a lista de categorias, adicionando a uma lista de produtos ordenados apenas os produtos que correspondem à categoria da iteração em questão. Como a estrutura itera sobre todas as categorias ao final teremos uma lista de produtos com todos os produtos agrupados por categoria. 
+
+A cada iteração é filtrado apenas os objetos de uma categoria, criando um grupo, utilizando o método filter(). Os elementos desse grupo são ordenados por ID, em ordem crescente, utilizando o método sort(), e, ao final, mapeados à lista de produtos como uma lista dos nomes dos produtos, por meio de map().
+
+\begin{lstlisting}[caption=Função listProducts()]
+const listProducts = (database, categories) => {
+     let products = [];
+     for(let cat of categories){
+          products = products.concat(database
+               .filter(item => item["category"] == cat)
+               .sort((x, y) => x["id"] - y["id"])
+               .map(item => item["name"]));
+     }
+     console.log("\033[0;32m%s\033[0m",
+     "List of categorized and sorted products:");
+     products.forEach(item => console.log(item));
+}
+\end{lstlisting}
+
+Já a função \textbf{stockValue()}, como mostra a listagem 7, mostra ao usuário o valor total do estoque de cada categoria. Essa função itera sobre cada elemento da lista de categorias, imprimindo uma string personalizada com o valor total, referente a cada categoria. O valor total é calculado pela função categoryTotal(), que recebe uma categoria e retorna o valor total do estoque da categoria. Esse valor total é formatado para suas casas decimais com a função toFixed(2). 
+
+Essa função é chamada em cada iteração, assim operando em todas as categorias no processo. Ela primeiro filtra os elementos do banco de dados pela categoria passada como argumento. Após isso é calculado o valor total de cada elemento, ou seja, o preço multiplicado pela quantidade. Então é realizado um processo de redução, onde o valor total de cada produto é acumulado com os outros. Ao final o valor total referente à categoria é retornado.
+\begin{lstlisting}[caption=Função stockValue()]
+const stockValue = (database, categories) => {
+     const categoryTotal = (category) => database
+          .filter(item => item["category"] == category)
+          .map(item => item["price"] * item["quantity"])
+          .reduce((total, item) => total + item);
+     
+     console.log("\033[0;32m%s\033[0m",
+     "\nTotal inventory value by category:");
+     
+     categories.forEach(cat => 
+     console.log(`Category ${cat}: R$${categoryTotal(cat).toFixed(2)}`));
+}
+\end{lstlisting}
+
+\section{O código principal}
+
+É só na última seção do código que são invocadas as funções. Primeiramente é utilizada a função importDatabase(), passando a constante que representa o caminho do arquivo de entrada como argumento. A função retorna uma lista de objetos, que é utilizada como argumento nos métodos fixNames(), fixPrices() e fixQuantities(), que retornam a mesma lista de objetos, porém com a respectiva propriedade consertada. Após isso é utilizada a função exportDatabase() para exportar a lista para um arquivo, passando a constante com o caminho do arquivo de saída e a lista de objetos.
+
+É utilizada uma função autoexecutável para atribuir à constante productCategories uma lista das categorias dos produtos, em ordem alfabética. Essa função é mostrada na listagem 8. É utilizado um objeto da classe Set para guardar as categorias sem que hajam repetições. Para isso obtemos as categorias de cada produto e iteramos sobre elas, adicionando uma a uma no conjunto. Ao final obtemos um array a partir do conjunto, em ordem alfabética. Esse array então é atribuído à productCategories, que será passado como argumento para as funções de validação, junto ao banco de dados corrigido.
+\begin{lstlisting}[caption=Lista productCategories]
+const productCategories = (() => {
+    let categories = new Set();
+    databaseRaw.map(item => item["category"])
+    .forEach(cat => categories.add(cat));
+    return Array.from(categories).sort();
+})();
+\end{lstlisting}
+
+É possível perceber que essa função só executará uma vez, e de forma automática, e atribuirá à productCategories seu retorno.
+
+\begin{myframe}{Posicionamento da constante productCategories} 
+Essa função não pode ser executada antes de importar o banco de dados, logo não é possível posicionar a constante na seção das outras constantes. Portanto, teve de ser colocada na última seção. Poderíamos defini-la como ``var", o que iria realizar o \textit{hoisting}, podendo ser acessada livremente nas funções acima, mas isso impactaria uma futura modularidade do código. Dito isso a melhor abordagem era definir como constante na última seção e passá-la como parâmetro para as funções.
+\end{myframe}
+
+Toda a função principal foi envelopada com um bloco \textbf{try-catch} para tratar erros no arquivo de entrada, por mais que apenas a função importDatabase() lance um objeto FileError. Isso foi feito para que o código permaneça mais organizado. Caso haja um erro no arquivo de entrada este é tratado no bloco \textbf{catch} da seção principal, mostrando ao usuário o nome do erro, em negrito de cor branca, e a mensagem em si, em vermelho, como mostra a listagem 9.
+
+\begin{lstlisting}[caption=Tratamento do erro FileError]
+catch (fileError) {
+     console.log("\033[1;37m%s\033[0m: \033[0;31m%s\033[0m",
+     fileError.name, fileError.message);
+}
+\end{lstlisting}
+
+Importante lembrar que, para que não haja um erro de arquivo, o programa deve ser executado a partir de sua própria pasta. Ou seja, o diretório de trabalho, ao executar o programa, deve ser o diretório brokendatabase/, ou outro em que o programa esteja localizado.
+
+\section{Conclusões}
+
+Eu me diverti bastante fazendo esse projeto. Digo que aprendi muita coisa, e que foi um desafio muito interessante, principalmente a função listProducts(). Essa função foi um grande desafio, pois queria fazer o código da maneira mais responsiva o possível, de forma que as categorias não estivesse pré-selecionadas e, ao mesmo tempo, queria uma solução com um bom desempenho. 
+
+Utilizar o paradigma funcional em um projeto como esse realmente me serviu de grande aprendizado, e espero ter mais oportunidades como essa! Dito isso, gostaria de agradecer a você que acompanhou o meu projeto e aos prezados da Rocky, que me deram a excelente oportunidade de concorrer a uma vaga de estágio em sua empresa. Foi uma jornada cheia de aprendizados, e espero que continue por muito tempo!
+
+Até a próxima!
+
+\begin{flushright}
+\textit{Pedro M. Botelho\\Engenharia de Computação}
+\end{flushright}
+
+\end{document}

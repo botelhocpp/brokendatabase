@@ -57,7 +57,7 @@ If you run it from outside the folder it will throw a file error.
 
 ### Technologies
 
-The following tools were used the project:
+The following tools were used in the project:
 
 - [Javascript](https://www.javascript.com/)
 - [Node.js](https://nodejs.org/en/)
